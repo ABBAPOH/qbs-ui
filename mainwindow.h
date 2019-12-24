@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qbssession.h"
+
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -17,5 +19,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    std::unique_ptr<QbsSession> m_session{std::make_unique<QbsSession>()};
 };
+
 #endif // MAINWINDOW_H
