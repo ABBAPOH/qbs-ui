@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->dockWidget->setTitleBarWidget(new QWidget);
     const auto model = new ProjectModel(ui->treeView);
     ui->treeView->setModel(model);
 
