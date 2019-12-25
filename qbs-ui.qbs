@@ -24,6 +24,8 @@ QtApplication {
         "qbssession.cpp",
         "qbssession.h",
         "qbssession_p.h",
+        "treemodelitem.h",
+        "treemodelitem.cpp",
     ]
 
     install: true
