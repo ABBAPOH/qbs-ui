@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "projectmodel.h"
+
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QJsonArray>
@@ -25,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    const auto model = new QStringListModel(ui->treeView);
+    const auto model = new ProjectModel(ui->treeView);
     ui->treeView->setModel(model);
 
     const auto dir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs/build");
@@ -42,11 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << m_session->projectData().keys();
         qDebug() << m_session->projectData()["build-system-files"].toArray();
         qDebug() << m_session->projectData()["products"].toArray();
-        QDir d(dir);
-        d.cdUp();
-        d.cd("qbs");
-        QStringList list = getProducts(m_session->projectData());
-        model->setStringList(list);
+        model->setProjectData(m_session->projectData());
     };
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
 
