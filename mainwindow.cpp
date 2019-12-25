@@ -9,19 +9,6 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QStringListModel>
 
-static QStringList getProducts(const QJsonObject &project)
-{
-    QStringList list;
-    const auto products = project["products"].toArray();
-    for (const auto &product: products)
-        list.append(product["name"].toString());
-
-    const auto subProjects = project["sub-projects"].toArray();
-    for (const auto &subProject: subProjects)
-        list.append(getProducts(subProject.toObject()));
-    return list;
-}
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
