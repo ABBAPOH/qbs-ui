@@ -9,6 +9,10 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QStringListModel>
 
+const auto projectDir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs");
+const auto projectFilePath = projectDir + QStringLiteral("/qbs.qbs");
+const auto buildDir = projectDir + QStringLiteral("/build");
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -18,9 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
     const auto model = new ProjectModel(ui->treeView);
     ui->treeView->setModel(model);
 
-    const auto projectDir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs");
-    const auto projectFilePath = projectDir + QStringLiteral("/qbs.qbs");
-    const auto buildDir = projectDir + QStringLiteral("/build");
     setBuildDirPath(buildDir);
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
@@ -38,17 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     };
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
 
-    const auto dir = buildDirPath();
-    QJsonObject request;
-    request.insert("type", "resolve-project");
-    request.insert("dry-run", !QFileInfo::exists(dir));
-    request.insert("build-root", dir);
-    request.insert("configuration-name", "qbs-ui");
-    request.insert("data-mode", "only-if-changed");
-
-    request.insert("project-file-path", projectFilePath);
-
-    m_session->sendRequest(request);
+    resolve();
 }
 
 MainWindow::~MainWindow()
@@ -64,4 +55,19 @@ QString MainWindow::buildDirPath() const
 void MainWindow::setBuildDirPath(QString path)
 {
     ui->buildDirChooser->setPath(path);
+}
+
+void MainWindow::resolve()
+{
+    const auto dir = buildDirPath();
+    QJsonObject request;
+    request.insert("type", "resolve-project");
+    request.insert("dry-run", !QFileInfo::exists(dir));
+    request.insert("build-root", dir);
+    request.insert("configuration-name", "qbs-ui");
+    request.insert("data-mode", "only-if-changed");
+
+    request.insert("project-file-path", projectFilePath);
+
+    m_session->sendRequest(request);
 }

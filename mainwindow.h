@@ -20,6 +20,8 @@ public:
     QString buildDirPath() const;
     void setBuildDirPath(QString path);
 
+    void resolve();
+
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<QbsSession> m_session{std::make_unique<QbsSession>()};
