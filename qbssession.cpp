@@ -391,10 +391,10 @@ void QbsSession::handlePacket(const QJsonObject &packet)
     } else if (type == "log-data") {
 //        Core::MessageManager::write("[qbs] " + packet.value("message").toString(),
 //                                    Core::MessageManager::Silent);
-        qCInfo(lcQbsSession()) << "[qbs] " + packet.value("message").toString();
+        qCInfo(lcQbsSession) << "[qbs] " + packet.value("message").toString();
     } else if (type == "warning") {
         const ErrorInfo errorInfo = ErrorInfo(packet.value("warning").toObject());
-        qCWarning(lcQbsSession()) << "[qbs] " + errorInfo.toString();
+        qCWarning(lcQbsSession) << "[qbs] " + errorInfo.toString();
 
         // TODO: This loop occurs a lot. Factor it out.
 //        for (const ErrorInfoItem &item : errorInfo.items) {

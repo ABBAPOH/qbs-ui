@@ -20,7 +20,9 @@ public:
     QString buildDirPath() const;
     void setBuildDirPath(QString path);
 
+private:
     void resolve();
+    void build();
 
 private:
     Ui::MainWindow *ui;
