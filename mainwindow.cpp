@@ -18,10 +18,12 @@ MainWindow::MainWindow(QWidget *parent)
     const auto model = new ProjectModel(ui->treeView);
     ui->treeView->setModel(model);
 
-    const auto dir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs/build");
-    const auto projectFilePath = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs/qbs.qbs");
+    const auto projectDir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs");
+    const auto projectFilePath = projectDir + QStringLiteral("/qbs.qbs");
+    const auto buildDir = projectDir + QStringLiteral("/build");
+    setBuildDirPath(buildDir);
 
-    const auto onProjectResolved = [this, model, dir](const ErrorInfo &error)
+    const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
         qDebug() << "project resolved";
         if (error.hasError()) {
@@ -36,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     };
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
 
+    const auto dir = buildDirPath();
     QJsonObject request;
     request.insert("type", "resolve-project");
     request.insert("dry-run", !QFileInfo::exists(dir));
@@ -53,3 +56,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+QString MainWindow::buildDirPath() const
+{
+    return ui->buildDirChooser->path();
+}
+
+void MainWindow::setBuildDirPath(QString path)
+{
+    ui->buildDirChooser->setPath(path);
+}

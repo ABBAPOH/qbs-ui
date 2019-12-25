@@ -17,6 +17,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    QString buildDirPath() const;
+    void setBuildDirPath(QString path);
+
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<QbsSession> m_session{std::make_unique<QbsSession>()};
