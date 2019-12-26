@@ -3,6 +3,8 @@
 
 #include "projectmodel.h"
 
+#include <QtWidgets/QProgressBar>
+
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QJsonArray>
@@ -23,6 +25,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->setModel(model);
     ui->splitter->setSizes({200, 100});
 
+    m_progressBar = new QProgressBar(statusBar());
+    m_progressBar->setMaximum(1);
+    m_progressBar->setMaximumWidth(200);
+    statusBar()->addPermanentWidget(m_progressBar);
+
     setBuildDirPath(buildDir);
 
     connect(ui->buildButton, &QAbstractButton::clicked, this, &MainWindow::build);
@@ -30,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
-        logMessage(tr("Project resolved"));
+        logStatusMessage(tr("Project resolved"));
         qDebug() << "project resolved";
         if (error.hasError()) {
             qWarning() << error.toString();
@@ -44,18 +51,19 @@ MainWindow::MainWindow(QWidget *parent)
     };
     const auto onProjectBuilt = [this](const ErrorInfo &error)
     {
-        logMessage(tr("Build done!"));
+        logStatusMessage(tr("Build done!"));
     };
     const auto onProjectCleaned = [this](const ErrorInfo &error)
     {
-        logMessage(tr("Clean done!"));
+        logStatusMessage(tr("Clean done!"));
     };
 
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
     connect(m_session.get(), &QbsSession::projectBuilt, this, onProjectBuilt);
     connect(m_session.get(), &QbsSession::projectCleaned, this, onProjectCleaned);
     connect(m_session.get(), &QbsSession::taskStarted, this, &MainWindow::onTaskStarted);
-    connect(m_session.get(), &QbsSession::taskProgress, this, [](int p){ qDebug() << "taskProgress:" << p;});
+    connect(m_session.get(), &QbsSession::taskProgress,
+            this, [this](int p){ m_progressBar->setValue(p); });
     connect(m_session.get(), &QbsSession::commandDescription, this, &MainWindow::logMessage);
 
     resolve();
@@ -112,10 +120,18 @@ void MainWindow::clearLog()
     ui->plainTextEdit->clear();
 }
 
+void MainWindow::logStatusMessage(const QString &message)
+{
+    statusBar()->showMessage(message);
+    logMessage(message);
+}
+
 void MainWindow::onTaskStarted(const QString &message, int maxProgress)
 {
+    m_progressBar->setValue(0);
+    m_progressBar->setMaximum(maxProgress);
     clearLog();
-    logMessage(message);
+    logStatusMessage(message);
 }
 
 void MainWindow::logMessage(const QString &message)

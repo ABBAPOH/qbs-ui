@@ -9,6 +9,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class QProgressBar;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -25,11 +27,13 @@ private:
     void build();
     void cleanProject();
     void clearLog();
+    void logStatusMessage(const QString &message);
     void logMessage(const QString &message);
     void onTaskStarted(const QString &message, int maxProgress);
 
 private:
     Ui::MainWindow *ui;
+    QProgressBar *m_progressBar{nullptr};
     std::unique_ptr<QbsSession> m_session{std::make_unique<QbsSession>()};
 };
 
