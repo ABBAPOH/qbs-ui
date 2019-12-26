@@ -48,14 +48,17 @@ MainWindow::MainWindow(QWidget *parent)
 //        qDebug() << m_session->projectData()["build-system-files"].toArray();
 //        qDebug() << m_session->projectData()["products"].toArray();
         model->setProjectData(m_session->projectData());
+        setState(State::Ready);
     };
     const auto onProjectBuilt = [this](const ErrorInfo &error)
     {
         logStatusMessage(tr("Build done!"));
+        setState(State::Ready);
     };
     const auto onProjectCleaned = [this](const ErrorInfo &error)
     {
         logStatusMessage(tr("Clean done!"));
+        setState(State::Ready);
     };
 
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
@@ -128,10 +131,27 @@ void MainWindow::logStatusMessage(const QString &message)
 
 void MainWindow::onTaskStarted(const QString &message, int maxProgress)
 {
+    setState(State::Working);
     m_progressBar->setValue(0);
     m_progressBar->setMaximum(maxProgress);
     clearLog();
     logStatusMessage(message);
+}
+
+void MainWindow::setState(MainWindow::State state)
+{
+    if (m_state == state)
+        return;
+    m_state = state;
+    onStateChanged(m_state);
+}
+
+void MainWindow::onStateChanged(MainWindow::State state)
+{
+    ui->buildButton->setEnabled(state == State::Ready);
+//    ui->resolveButton->setEnabled(state != State::Working);
+    ui->cleanButton->setEnabled(state != State::Working);
+//    ui->cancelButton->setEnabled(state == State::Working);
 }
 
 void MainWindow::logMessage(const QString &message)
