@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockWidget->setTitleBarWidget(new QWidget);
     const auto model = new ProjectModel(ui->treeView);
     ui->treeView->setModel(model);
+    ui->splitter->setSizes({200, 100});
 
     setBuildDirPath(buildDir);
 
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
+        logMessage(tr("Project resolved"));
         qDebug() << "project resolved";
         if (error.hasError()) {
             qWarning() << error.toString();
@@ -40,12 +42,9 @@ MainWindow::MainWindow(QWidget *parent)
         model->setProjectData(m_session->projectData());
     };
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
-    connect(m_session.get(), &QbsSession::taskStarted,
-            this, [](const QString &text, int maxProgress)
-                    { qDebug() << "taskStarted" << text << maxProgress;});
+    connect(m_session.get(), &QbsSession::taskStarted, this, &MainWindow::onTaskStarted);
     connect(m_session.get(), &QbsSession::taskProgress, this, [](int p){ qDebug() << "taskProgress:" << p;});
-    connect(m_session.get(), &QbsSession::commandDescription,
-            this, [](const QString &text){ qDebug() << text;});
+    connect(m_session.get(), &QbsSession::commandDescription, this, &MainWindow::logMessage);
 
     resolve();
 }
@@ -87,4 +86,21 @@ void MainWindow::build()
     request.insert("type", "build-project");
 
     m_session->sendRequest(request);
+}
+
+void MainWindow::clearLog()
+{
+    ui->plainTextEdit->clear();
+}
+
+void MainWindow::onTaskStarted(const QString &message, int maxProgress)
+{
+    clearLog();
+    logMessage(message);
+}
+
+void MainWindow::logMessage(const QString &message)
+{
+    qDebug() << message;
+    ui->plainTextEdit->appendPlainText(message);
 }

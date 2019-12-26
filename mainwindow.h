@@ -23,6 +23,9 @@ public:
 private:
     void resolve();
     void build();
+    void clearLog();
+    void logMessage(const QString &message);
+    void onTaskStarted(const QString &message, int maxProgress);
 
 private:
     Ui::MainWindow *ui;
