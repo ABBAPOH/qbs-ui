@@ -33,6 +33,7 @@ private:
     void build();
     void cleanProject();
     void clearLog();
+    void cancelJob();
     void logStatusMessage(const QString &message);
     void logMessage(const QString &message);
     void onTaskStarted(const QString &message, int maxProgress);

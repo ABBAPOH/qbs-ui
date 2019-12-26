@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->buildButton, &QAbstractButton::clicked, this, &MainWindow::build);
     connect(ui->cleanButton, &QAbstractButton::clicked, this, &MainWindow::cleanProject);
+    connect(ui->cancelButton, &QAbstractButton::clicked, this, &MainWindow::cancelJob);
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
@@ -123,6 +124,13 @@ void MainWindow::clearLog()
     ui->plainTextEdit->clear();
 }
 
+void MainWindow::cancelJob()
+{
+    QJsonObject request;
+    request.insert("type", "cancel-job");
+    m_session->sendRequest(request);
+}
+
 void MainWindow::logStatusMessage(const QString &message)
 {
     statusBar()->showMessage(message);
@@ -151,7 +159,7 @@ void MainWindow::onStateChanged(MainWindow::State state)
     ui->buildButton->setEnabled(state == State::Ready);
 //    ui->resolveButton->setEnabled(state != State::Working);
     ui->cleanButton->setEnabled(state != State::Working);
-//    ui->cancelButton->setEnabled(state == State::Working);
+    ui->cancelButton->setEnabled(state == State::Working);
 }
 
 void MainWindow::logMessage(const QString &message)
