@@ -23,6 +23,7 @@ public:
 private:
     void resolve();
     void build();
+    void cleanProject();
     void clearLog();
     void logMessage(const QString &message);
     void onTaskStarted(const QString &message, int maxProgress);

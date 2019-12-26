@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     setBuildDirPath(buildDir);
 
     connect(ui->buildButton, &QAbstractButton::clicked, this, &MainWindow::build);
+    connect(ui->cleanButton, &QAbstractButton::clicked, this, &MainWindow::cleanProject);
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
@@ -41,7 +42,18 @@ MainWindow::MainWindow(QWidget *parent)
 //        qDebug() << m_session->projectData()["products"].toArray();
         model->setProjectData(m_session->projectData());
     };
+    const auto onProjectBuilt = [this](const ErrorInfo &error)
+    {
+        logMessage(tr("Build done!"));
+    };
+    const auto onProjectCleaned = [this](const ErrorInfo &error)
+    {
+        logMessage(tr("Clean done!"));
+    };
+
     connect(m_session.get(), &QbsSession::projectResolved, this, onProjectResolved);
+    connect(m_session.get(), &QbsSession::projectBuilt, this, onProjectBuilt);
+    connect(m_session.get(), &QbsSession::projectCleaned, this, onProjectCleaned);
     connect(m_session.get(), &QbsSession::taskStarted, this, &MainWindow::onTaskStarted);
     connect(m_session.get(), &QbsSession::taskProgress, this, [](int p){ qDebug() << "taskProgress:" << p;});
     connect(m_session.get(), &QbsSession::commandDescription, this, &MainWindow::logMessage);
@@ -85,6 +97,13 @@ void MainWindow::build()
     QJsonObject request;
     request.insert("type", "build-project");
 
+    m_session->sendRequest(request);
+}
+
+void MainWindow::cleanProject()
+{
+    QJsonObject request;
+    request.insert("type", "clean-project");
     m_session->sendRequest(request);
 }
 
