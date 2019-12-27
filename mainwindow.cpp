@@ -50,11 +50,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
-        qDebug() << "project resolved";
         if (error.hasError()) {
-            qWarning() << error.toString();
-            logStatusMessage(tr("Resolve failed"));
             logMessage(error.toString());
+            logStatusMessage(tr("Resolve failed"));
             setState(State::NotReady);
             return;
         }
@@ -68,12 +66,22 @@ MainWindow::MainWindow(QWidget *parent)
     };
     const auto onProjectBuilt = [this](const ErrorInfo &error)
     {
-        logStatusMessage(tr("Build done!"));
+        if (error.hasError()) {
+            logMessage(error.toString());
+            logStatusMessage(tr("Build failed"));
+        } else {
+            logStatusMessage(tr("Build done!"));
+        }
         setState(State::Ready);
     };
     const auto onProjectCleaned = [this](const ErrorInfo &error)
     {
-        logStatusMessage(tr("Clean done!"));
+        if (error.hasError()) {
+            logMessage(error.toString());
+            logStatusMessage(tr("Clean failed"));
+        } else {
+            logStatusMessage(tr("Clean done!"));
+        }
         setState(State::Ready);
     };
 
@@ -84,6 +92,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_session.get(), &QbsSession::taskProgress,
             this, [this](int p){ m_progressBar->setValue(p); });
     connect(m_session.get(), &QbsSession::commandDescription, this, &MainWindow::logMessage);
+    auto onProcessResult = [this](
+            const QString &executable,
+            const QStringList &arguments,
+            const QString &workingDir,
+            const QStringList &stdOut,
+            const QStringList &stdErr,
+            bool success)
+    {
+        logMessage(executable + arguments.join(' '));
+        logMessage(stdErr.join("\n"));
+    };
+    connect(m_session.get(), &QbsSession::processResult, this, onProcessResult);
 
     resolve();
 }
