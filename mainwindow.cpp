@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "projectmodel.h"
+#include "profilesmodel.h"
 
 #include <QtWidgets/QProgressBar>
 
@@ -10,6 +11,8 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
 #include <QtCore/QStringListModel>
+
+#include <tools/settings.h>
 
 const auto projectDir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs");
 const auto projectFilePath = projectDir + QStringLiteral("/qbs.qbs");
@@ -24,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent)
     const auto model = new ProjectModel(ui->treeView);
     ui->treeView->setModel(model);
     ui->splitter->setSizes({200, 100});
+
+    const auto profilesModel = new ProfilesModel(ui->profilesView);
+    ui->profilesView->setModel(profilesModel);
 
     m_progressBar = new QProgressBar(statusBar());
     m_progressBar->setMaximum(1);

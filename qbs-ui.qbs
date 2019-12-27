@@ -15,7 +15,9 @@ QtApplication {
         /* "QT_DISABLE_DEPRECATED_BEFORE=0x060000" */ // disables all the APIs deprecated before Qt 6.0.0
     ]
     cpp.cxxLanguageVersion: "c++17"
-    cpp.includePaths: base.concat([sourceDirectory]);
+    cpp.includePaths: base.concat([sourceDirectory, "../qbs/src/lib/corelib/"]);
+    cpp.dynamicLibraries: base.concat(["qbscore"])
+    cpp.libraryPaths: base.concat(["/Applications/Qt/Qt Creator.app/Contents/Frameworks/"])
 
     files: [
         "main.cpp",
@@ -27,6 +29,8 @@ QtApplication {
         "projectmodel.cpp",
         "projectmodel.h",
         "projectmodel_p.h",
+        "profilesmodel.cpp",
+        "profilesmodel.h",
         "qbssession.cpp",
         "qbssession.h",
         "qbssession_p.h",
