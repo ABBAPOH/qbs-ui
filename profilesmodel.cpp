@@ -20,16 +20,21 @@ void ProfilesModel::setCurrentProfile(QString profile)
         qWarning() << "unknown profile" << profile;
         return;
     }
+    const auto oldEffectiveProfile = effectiveProfile();
     const auto oldProfile = std::move(m_currentProfile);
     m_currentProfile = std::move(profile);
+    const auto newEffectiveProfile = effectiveProfile();
     const auto newIndex = this->index(newRow);
     emit dataChanged(newIndex, newIndex);
 
     int oldRow = m_data.indexOf(oldProfile);
-    if (oldRow == -1)
-        return;
-    const auto oldIndex = this->index(oldRow);
-    emit dataChanged(oldIndex, oldIndex);
+    if (oldRow != -1) {
+        const auto oldIndex = this->index(oldRow);
+        emit dataChanged(oldIndex, oldIndex);
+    }
+    qDebug() << oldEffectiveProfile << newEffectiveProfile;
+    if (oldEffectiveProfile != newEffectiveProfile)
+        emit effectiveProfileChanged(newEffectiveProfile);
 }
 
 QString ProfilesModel::effectiveProfile() const

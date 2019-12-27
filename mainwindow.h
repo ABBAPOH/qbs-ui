@@ -29,7 +29,7 @@ public:
     void setBuildDirPath(QString path);
 
 private:
-    void resolve();
+    void resolve(const QString &profile = {});
     void build();
     void cleanProject();
     void clearLog();

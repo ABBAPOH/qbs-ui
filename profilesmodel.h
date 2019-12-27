@@ -19,6 +19,7 @@ public:
     void setCurrentProfile(QString profile);
 
     QString effectiveProfile() const;
+    Q_SIGNAL void effectiveProfileChanged(const QString &profile);
 
     QString profile(QModelIndex index) const;
 

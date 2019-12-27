@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     const auto profilesModel = new ProfilesModel(ui->profilesView);
     ui->profilesView->setModel(profilesModel);
+    connect(profilesModel, &ProfilesModel::effectiveProfileChanged, this, &MainWindow::resolve);
     auto onDoubleClicked = [this, profilesModel](const QModelIndex &index)
     {
         profilesModel->setCurrentProfile(profilesModel->profile(index));
@@ -49,12 +50,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
-        logStatusMessage(tr("Project resolved"));
         qDebug() << "project resolved";
         if (error.hasError()) {
             qWarning() << error.toString();
+            logStatusMessage(tr("Resolve failed"));
+            logMessage(error.toString());
+            setState(State::NotReady);
             return;
         }
+        logStatusMessage(tr("Project resolved"));
 
 //        qDebug() << m_session->projectData().keys();
 //        qDebug() << m_session->projectData()["build-system-files"].toArray();
@@ -99,7 +103,7 @@ void MainWindow::setBuildDirPath(QString path)
     ui->buildDirChooser->setPath(path);
 }
 
-void MainWindow::resolve()
+void MainWindow::resolve(const QString &profile)
 {
     const auto dir = buildDirPath();
     QJsonObject request;
@@ -108,6 +112,8 @@ void MainWindow::resolve()
     request.insert("build-root", dir);
     request.insert("configuration-name", "qbs-ui");
     request.insert("data-mode", "only-if-changed");
+    if (!profile.isEmpty())
+        request.insert("top-level-profile", profile);
 
     request.insert("project-file-path", projectFilePath);
 
@@ -167,10 +173,12 @@ void MainWindow::setState(MainWindow::State state)
 
 void MainWindow::onStateChanged(MainWindow::State state)
 {
+    qDebug() << "onStateChanged" << int(state);
     ui->buildButton->setEnabled(state == State::Ready);
 //    ui->resolveButton->setEnabled(state != State::Working);
     ui->cleanButton->setEnabled(state != State::Working);
     ui->cancelButton->setEnabled(state == State::Working);
+    ui->profilesView->setEnabled(state != State::Working);
 }
 
 void MainWindow::logMessage(const QString &message)
