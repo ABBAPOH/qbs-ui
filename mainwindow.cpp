@@ -193,12 +193,13 @@ void MainWindow::setState(MainWindow::State state)
 
 void MainWindow::onStateChanged(MainWindow::State state)
 {
-    qDebug() << "onStateChanged" << int(state);
+    const bool isWorking = (state == State::Working);
+    ui->buildDirChooser->setEnabled(!isWorking);
     ui->buildButton->setEnabled(state == State::Ready);
 //    ui->resolveButton->setEnabled(state != State::Working);
-    ui->cleanButton->setEnabled(state != State::Working);
-    ui->cancelButton->setEnabled(state == State::Working);
-    ui->profilesView->setEnabled(state != State::Working);
+    ui->cleanButton->setEnabled(!isWorking);
+    ui->cancelButton->setEnabled(isWorking);
+    ui->profilesView->setEnabled(!isWorking);
 }
 
 void MainWindow::logMessage(const QString &message)
