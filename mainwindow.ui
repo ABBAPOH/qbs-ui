@@ -172,6 +172,9 @@
        <property name="orientation">
         <enum>Qt::Vertical</enum>
        </property>
+       <property name="handleWidth">
+        <number>1</number>
+       </property>
        <widget class="QTreeView" name="treeView"/>
        <widget class="QTreeView" name="profilesView"/>
       </widget>
