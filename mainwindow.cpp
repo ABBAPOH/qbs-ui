@@ -30,6 +30,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     const auto profilesModel = new ProfilesModel(ui->profilesView);
     ui->profilesView->setModel(profilesModel);
+    auto onDoubleClicked = [this, profilesModel](const QModelIndex &index)
+    {
+        profilesModel->setCurrentProfile(profilesModel->profile(index));
+    };
+    connect(ui->profilesView, &QAbstractItemView::doubleClicked, this, onDoubleClicked);
 
     m_progressBar = new QProgressBar(statusBar());
     m_progressBar->setMaximum(1);
