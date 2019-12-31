@@ -18,7 +18,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(std::make_unique<Ui::MainWindow>())
 {
     ui->setupUi(this);
     ui->dockWidget->setTitleBarWidget(new QWidget);
@@ -45,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cancelButton, &QAbstractButton::clicked, this, &MainWindow::cancelJob);
 
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::open);
+    connect(ui->actionQuit, &QAction::triggered, &QCoreApplication::quit);
+    connect(ui->actionAboutQt, &QAction::triggered, &QApplication::aboutQt);
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
@@ -106,10 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
     onStateChanged(m_state);
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
+MainWindow::~MainWindow() = default;
 
 void MainWindow::setProjectFilePath(QString path)
 {

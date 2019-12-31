@@ -5,6 +5,8 @@
 
 #include <QMainWindow>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -46,7 +48,7 @@ private:
     void onStateChanged(State state);
 
 private:
-    Ui::MainWindow *ui;
+    std::unique_ptr<Ui::MainWindow> ui;
     QProgressBar *m_progressBar{nullptr};
     QString m_projectFilePath;
     std::unique_ptr<QbsSession> m_session{std::make_unique<QbsSession>()};
