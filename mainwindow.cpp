@@ -3,9 +3,11 @@
 
 #include "projectmodel.h"
 #include "profilesmodel.h"
+#include "productlistmodel.h"
 
-#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressBar>
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
@@ -35,6 +37,9 @@ MainWindow::MainWindow(QWidget *parent)
     };
     connect(ui->profilesView, &QAbstractItemView::doubleClicked, this, onDoubleClicked);
 
+    const auto productsModel = new ProductListModel(ui->productsComboBox);
+    ui->productsComboBox->setModel(productsModel);
+
     m_progressBar = new QProgressBar(statusBar());
     m_progressBar->setMaximum(1);
     m_progressBar->setMaximumWidth(200);
@@ -43,12 +48,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->buildButton, &QAbstractButton::clicked, this, &MainWindow::build);
     connect(ui->cleanButton, &QAbstractButton::clicked, this, &MainWindow::cleanProject);
     connect(ui->cancelButton, &QAbstractButton::clicked, this, &MainWindow::cancelJob);
+    connect(ui->runButton, &QAbstractButton::clicked, this, &MainWindow::runProduct);
 
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::open);
     connect(ui->actionQuit, &QAction::triggered, &QCoreApplication::quit);
     connect(ui->actionAboutQt, &QAction::triggered, &QApplication::aboutQt);
 
-    const auto onProjectResolved = [this, model](const ErrorInfo &error)
+    const auto onProjectResolved = [this, model, productsModel](const ErrorInfo &error)
     {
         if (error.hasError()) {
             logMessage(error.toString());
@@ -62,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent)
 //        qDebug() << m_session->projectData()["build-system-files"].toArray();
 //        qDebug() << m_session->projectData()["products"].toArray();
         model->setProjectData(m_session->projectData());
+        productsModel->setProjectData(m_session->projectData());
+        if (ui->productsComboBox->currentIndex() == -1)
+            ui->productsComboBox->setCurrentIndex(0);
         setState(State::Ready);
     };
     const auto onProjectBuilt = [this](const ErrorInfo &error)
@@ -164,6 +173,7 @@ void MainWindow::build()
     const auto dir = buildDirPath();
     QJsonObject request;
     request.insert("type", "build-project");
+    request.insert("install", true);
 
     m_session->sendRequest(request);
 }
@@ -185,6 +195,30 @@ void MainWindow::cancelJob()
     QJsonObject request;
     request.insert("type", "cancel-job");
     m_session->sendRequest(request);
+}
+
+void MainWindow::runProduct()
+{
+    auto model = qobject_cast<ProductListModel *>(ui->productsComboBox->model());
+    const auto exe = model->targetExecutable(model->index(ui->productsComboBox->currentIndex()));
+    if (exe.isEmpty())
+        return;
+
+    qDebug() << exe;
+    QProcess p;
+    auto env = QProcessEnvironment::systemEnvironment();
+    const auto result = m_session->getRunEnvironment(ui->productsComboBox->currentText(), env, {});
+    if (result.error().hasError()) {
+        qWarning() << "Can' get env" << result.error().toString();
+        return;
+    }
+    p.setProgram(exe);
+    qDebug() << result.environment().toStringList();
+    p.setProcessEnvironment(result.environment());
+    if (!p.startDetached()) {
+        QMessageBox::warning(
+                this, tr("Run Product"), tr("Run product failed: %1").arg(p.errorString()));
+    }
 }
 
 void MainWindow::logStatusMessage(const QString &message)

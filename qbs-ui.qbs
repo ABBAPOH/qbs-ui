@@ -31,6 +31,8 @@ QtApplication {
         "projectmodel_p.h",
         "profilesmodel.cpp",
         "profilesmodel.h",
+        "productlistmodel.cpp",
+        "productlistmodel.h",
         "qbssession.cpp",
         "qbssession.h",
         "qbssession_p.h",

@@ -87,7 +87,7 @@ class RunEnvironmentResult : public SynchronousRequestResult<QProcessEnvironment
 {
 public:
     using SynchronousRequestResult::SynchronousRequestResult;
-    QProcessEnvironment environment() { return m_data; }
+    QProcessEnvironment environment() const { return m_data; }
 };
 
 // TODO: Put the helper function somewhere else. E.g. in qbsnodes.cpp we don't want a session include.

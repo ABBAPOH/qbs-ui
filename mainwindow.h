@@ -41,6 +41,7 @@ private:
     void cleanProject();
     void clearLog();
     void cancelJob();
+    void runProduct();
     void logStatusMessage(const QString &message);
     void logMessage(const QString &message);
     void onTaskStarted(const QString &message, int maxProgress);
