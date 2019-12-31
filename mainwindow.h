@@ -20,15 +20,20 @@ public:
     ~MainWindow();
 
     enum class State {
+        Empty,
         NotReady,
         Ready,
         Working
     };
 
+    const QString &projectFilePath() const noexcept { return m_projectFilePath; }
+    void setProjectFilePath(QString path);
+
     QString buildDirPath() const;
     void setBuildDirPath(QString path);
 
 private:
+    void open();
     void resolve(const QString &profile = {});
     void build();
     void cleanProject();
@@ -43,8 +48,9 @@ private:
 private:
     Ui::MainWindow *ui;
     QProgressBar *m_progressBar{nullptr};
+    QString m_projectFilePath;
     std::unique_ptr<QbsSession> m_session{std::make_unique<QbsSession>()};
-    State m_state{State::NotReady};
+    State m_state{State::Empty};
 };
 
 #endif // MAINWINDOW_H

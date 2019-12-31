@@ -5,18 +5,16 @@
 #include "profilesmodel.h"
 
 #include <QtWidgets/QProgressBar>
+#include <QtWidgets/QFileDialog>
 
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
 #include <QtCore/QStringListModel>
+#include <QtCore/QSettings>
 
 #include <tools/settings.h>
-
-const auto projectDir = QStringLiteral("/Users/abbapoh/Programming/qt5/alien/qbs");
-const auto projectFilePath = projectDir + QStringLiteral("/qbs.qbs");
-const auto buildDir = projectDir + QStringLiteral("/build");
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -42,11 +40,11 @@ MainWindow::MainWindow(QWidget *parent)
     m_progressBar->setMaximumWidth(200);
     statusBar()->addPermanentWidget(m_progressBar);
 
-    setBuildDirPath(buildDir);
-
     connect(ui->buildButton, &QAbstractButton::clicked, this, &MainWindow::build);
     connect(ui->cleanButton, &QAbstractButton::clicked, this, &MainWindow::cleanProject);
     connect(ui->cancelButton, &QAbstractButton::clicked, this, &MainWindow::cancelJob);
+
+    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::open);
 
     const auto onProjectResolved = [this, model](const ErrorInfo &error)
     {
@@ -105,12 +103,21 @@ MainWindow::MainWindow(QWidget *parent)
     };
     connect(m_session.get(), &QbsSession::processResult, this, onProcessResult);
 
-    resolve();
+    onStateChanged(m_state);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setProjectFilePath(QString path)
+{
+    if (m_projectFilePath == path)
+        return;
+    m_projectFilePath = std::move(path);
+    setBuildDirPath(QFileInfo(m_projectFilePath).absolutePath() + QStringLiteral("/build"));
+    resolve();
 }
 
 QString MainWindow::buildDirPath() const
@@ -121,6 +128,19 @@ QString MainWindow::buildDirPath() const
 void MainWindow::setBuildDirPath(QString path)
 {
     ui->buildDirChooser->setPath(path);
+}
+
+void MainWindow::open()
+{
+    QSettings set;
+    const auto lastFilePathKey = QStringLiteral("lastFilePath");
+    const auto lastFilePath = set.value(lastFilePathKey).toString();
+    const auto filePath = QFileDialog::getOpenFileName(
+            this, tr("Open project"), lastFilePath, QStringLiteral("*.qbs"));
+    if (filePath.isEmpty())
+        return;
+    set.setValue(lastFilePathKey, filePath);
+    setProjectFilePath(filePath);
 }
 
 void MainWindow::resolve(const QString &profile)
@@ -135,7 +155,7 @@ void MainWindow::resolve(const QString &profile)
     if (!profile.isEmpty())
         request.insert("top-level-profile", profile);
 
-    request.insert("project-file-path", projectFilePath);
+    request.insert("project-file-path", m_projectFilePath);
 
     m_session->sendRequest(request);
 }
@@ -193,13 +213,13 @@ void MainWindow::setState(MainWindow::State state)
 
 void MainWindow::onStateChanged(MainWindow::State state)
 {
-    const bool isWorking = (state == State::Working);
-    ui->buildDirChooser->setEnabled(!isWorking);
+    const bool isDisabled = (state == State::Working || state == State::Empty);
+    ui->buildDirChooser->setEnabled(!isDisabled);
     ui->buildButton->setEnabled(state == State::Ready);
 //    ui->resolveButton->setEnabled(state != State::Working);
-    ui->cleanButton->setEnabled(!isWorking);
-    ui->cancelButton->setEnabled(isWorking);
-    ui->profilesView->setEnabled(!isWorking);
+    ui->cleanButton->setEnabled(!isDisabled);
+    ui->cancelButton->setEnabled(state == State::Working);
+    ui->profilesView->setEnabled(!isDisabled);
 }
 
 void MainWindow::logMessage(const QString &message)
