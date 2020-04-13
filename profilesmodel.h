@@ -3,6 +3,8 @@
 
 #include <QtCore/QAbstractListModel>
 
+#include <memory>
+
 namespace qbs {
 class Settings;
 }

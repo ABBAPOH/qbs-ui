@@ -70,6 +70,7 @@ void QbsSession::initialize()
     env.insert("QT_FORCE_STDERR_LOGGING", "1");
     env.remove(QStringLiteral("DYLD_FRAMEWORK_PATH"));
     env.remove(QStringLiteral("DYLD_LIBRARY_PATH"));
+    env.remove(QStringLiteral("LD_LIBRARY_PATH"));
     d->packetReader = new PacketReader(this);
     d->qbsProcess = new QProcess(this);
     d->qbsProcess->setProcessEnvironment(env);
@@ -372,7 +373,7 @@ void QbsSession::handlePacket(const QJsonObject &packet)
     const QString type = packet.value("type").toString();
     if (type == "hello") {
 //        QTC_CHECK(d->state == State::Initializing);
-        if (packet.value("api-compat-level").toInt() != 1) {
+        if (packet.value("api-compat-level").toInt() != 2) {
             setError(Error::VersionMismatch);
             return;
         }

@@ -4,6 +4,8 @@
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QJsonObject>
 
+#include <memory>
+
 class ProjectModel : public QAbstractItemModel
 {
     Q_OBJECT
