@@ -122,7 +122,11 @@ void QbsSession::initialize()
     });
     connect(d->packetReader, &PacketReader::packetReceived, this, &QbsSession::handlePacket);
     d->state = State::Initializing;
+#if defined(Q_OS_WIN)
+    const auto qbsExe = QStringLiteral("C:/Developer/Qt/Tools/QtCreator/bin/qbs.exe");
+#else
     const auto qbsExe = QStringLiteral("/Applications/Qt/Qt Creator.app/Contents/MacOS/qbs");
+#endif
     if (qbsExe.isEmpty() || !QFileInfo(qbsExe).exists()) {
         QTimer::singleShot(0, this, [this] { setError(Error::QbsFailedToStart); });
         return;
