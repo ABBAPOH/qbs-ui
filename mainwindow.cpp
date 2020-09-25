@@ -109,8 +109,11 @@ MainWindow::MainWindow(QWidget *parent)
             const QStringList &stdErr,
             bool success)
     {
-        logMessage(executable + arguments.join(' '));
-        logMessage(stdErr.join("\n"));
+        logMessage(executable + ' ' + arguments.join(' '));
+        if (!stdOut.isEmpty())
+            logMessage(stdOut.join("\n"));
+        if (!stdErr.isEmpty())
+            logMessage(stdErr.join("\n"));
     };
     connect(m_session.get(), &QbsSession::processResult, this, onProcessResult);
 
